@@ -1,0 +1,9 @@
+Symlinking /root/catkin_ws/devel/share/moveit_ros_move_group/cmake/moveit_ros_move_groupConfig-version.cmake
+Symlinking /root/catkin_ws/devel/share/moveit_ros_move_group/cmake/moveit_ros_move_groupConfig.cmake
+Symlinking /root/catkin_ws/devel/lib/libmoveit_move_group_capabilities_base.so
+Symlinking /root/catkin_ws/devel/lib/libmoveit_move_group_capabilities_base.so.1.1.16
+Symlinking /root/catkin_ws/devel/lib/libmoveit_move_group_default_capabilities.so.1.1.16
+Symlinking /root/catkin_ws/devel/lib/libmoveit_move_group_default_capabilities.so
+Symlinking /root/catkin_ws/devel/lib/moveit_ros_move_group/list_move_group_capabilities
+Symlinking /root/catkin_ws/devel/lib/moveit_ros_move_group/move_group
+Symlinking /root/catkin_ws/devel/lib/pkgconfig/moveit_ros_move_group.pc

@@ -1,0 +1,8 @@
+Symlinking /root/catkin_ws/devel/share/moveit_ros_benchmarks/cmake/moveit_ros_benchmarksConfig-version.cmake
+Symlinking /root/catkin_ws/devel/share/moveit_ros_benchmarks/cmake/moveit_ros_benchmarksConfig.cmake
+Symlinking /root/catkin_ws/devel/lib/libmoveit_ros_benchmarks.so
+Symlinking /root/catkin_ws/devel/lib/libmoveit_ros_benchmarks.so.1.1.16
+Symlinking /root/catkin_ws/devel/lib/pkgconfig/moveit_ros_benchmarks.pc
+Symlinking /root/catkin_ws/devel/lib/moveit_ros_benchmarks/moveit_benchmark_statistics.py
+Symlinking /root/catkin_ws/devel/lib/moveit_ros_benchmarks/moveit_combine_predefined_poses_benchmark
+Symlinking /root/catkin_ws/devel/lib/moveit_ros_benchmarks/moveit_run_benchmark

@@ -1,0 +1,61 @@
+services:
+  roscore:
+    image: thesis:latest
+    container_name: roscore
+    network_mode: host
+    restart: unless-stopped
+    entrypoint: /bin/bash
+    environment:
+      ROS_IP: 192.168.1.100
+      ROS_MASTER_URI: http://localhost:11311
+    command: -c "source /opt/ros/noetic/setup.bash && roscore"
+
+  motoman_controller:
+    image: thesis:latest
+    container_name: motoman_controller
+    network_mode: host
+    restart: unless-stopped
+    entrypoint: /bin/bash
+    depends_on:
+      - roscore
+    volumes:
+      - ./motoman_driver:/root/catkin_ws
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw     
+      - /dev/dri:/dev/dri:rw
+    environment:
+      ROS_IP: 192.168.1.100
+      ROS_MASTER_URI: http://localhost:11311
+      DISPLAY: ${DISPLAY:-:0}
+      QT_X11_NO_MITSHM: 1                     # <--- ADD THIS LINE (Prevents crashes)
+    command: >
+      -c "
+      cd /root/catkin_ws &&
+      source /opt/ros/noetic/setup.bash &&
+      source ./devel/setup.bash &&
+      echo 'Motoman Controller Ready' &&
+      tail -f /dev/null
+      "
+
+  ros1_bridge:
+    image: thesis:latest
+    container_name: ros1_bridge
+    network_mode: host
+    restart: unless-stopped
+    entrypoint: /bin/bash
+    depends_on:
+      - roscore
+    volumes:
+      - ./ros_bridge:/root/ros2_ws
+      - ./motoman_driver:/root/catkin_ws
+      - /dev/shm:/dev/shm
+    environment:
+      ROS_IP: 192.168.1.100
+      ROS_MASTER_URI: http://localhost:11311
+      ROS_DOMAIN_ID: 0
+      RMW_IMPLEMENTATION: rmw_fastrtps_cpp
+      FASTRTPS_DEFAULT_PROFILES_FILE: /root/ros2_ws/fastdds_udp.xml
+    command: >
+      -c "
+      echo 'Starting ROS1-ROS2 Bridge...' &&
+      tail -f /dev/null
+      "

@@ -1,0 +1,42 @@
+# Start with ROS 2 Foxy
+FROM ros:foxy-ros-base-focal
+
+SHELL ["/bin/bash", "-c"]
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 1. Setup ROS 1 Sources
+RUN apt-get update && apt-get install -y \
+    gnupg2 lsb-release curl \
+    && sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' \
+    && curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/ros1-latest.list > /dev/null
+
+# 2. Install ROS 1 and Build Tools (colcon, git)
+RUN apt-get update && apt-get install -y \
+    ros-noetic-ros-base \
+    python3-colcon-common-extensions \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# 3. Create a Workspace and Clone the Bridge
+WORKDIR /bridge_ws/src
+RUN git clone https://github.com/ros2/ros1_bridge.git -b foxy
+
+# 4. Build the Bridge (This takes time!)
+WORKDIR /bridge_ws
+# We source both environments so the compiler sees both ROS 1 and ROS 2 libraries
+RUN /bin/bash -c "source /opt/ros/noetic/setup.bash && \
+    source /opt/ros/foxy/setup.bash && \
+    colcon build --symlink-install --packages-select ros1_bridge --cmake-force-configure"
+
+# 5. Create Entrypoint
+RUN echo "#!/bin/bash" > /ros_entrypoint.sh && \
+    echo "set -e" >> /ros_entrypoint.sh && \
+    echo "source /opt/ros/noetic/setup.bash" >> /ros_entrypoint.sh && \
+    echo "source /opt/ros/foxy/setup.bash" >> /ros_entrypoint.sh && \
+    echo "source /bridge_ws/install/local_setup.bash" >> /ros_entrypoint.sh && \
+    echo 'exec "$@"' >> /ros_entrypoint.sh && \
+    chmod +x /ros_entrypoint.sh
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["bash"]

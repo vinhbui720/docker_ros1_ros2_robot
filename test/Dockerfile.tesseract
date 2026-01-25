@@ -1,0 +1,92 @@
+# ============================================================
+# ROS Noetic + Tesseract (source build) + Qt + OpenGL + NVIDIA
+# Ubuntu 20.04 (focal)
+# ============================================================
+
+FROM ros:noetic-robot
+
+ENV DEBIAN_FRONTEND=noninteractive
+SHELL ["/bin/bash", "-c"]
+
+# ------------------------------------------------------------
+# 0. Reliable mirrors (avoid apt timeout)
+# ------------------------------------------------------------
+RUN sed -i 's|http://archive.ubuntu.com|https://mirrors.edge.kernel.org|g' /etc/apt/sources.list && \
+    sed -i 's|http://security.ubuntu.com|https://mirrors.edge.kernel.org|g' /etc/apt/sources.list
+
+# ------------------------------------------------------------
+# 1. Core build + ROS tools
+# ------------------------------------------------------------
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    nano \
+    curl \
+    wget \
+    lsb-release \
+    pkg-config \
+    python3-pip \
+    python3-catkin-tools \
+    python3-rosdep \
+    python3-wstool \
+    python3-vcstool \
+    && rm -rf /var/lib/apt/lists/*
+
+# ------------------------------------------------------------
+# 2. OpenGL / X11 / GLVND (NVIDIA runtime compatible)
+# ------------------------------------------------------------
+RUN apt-get update && apt-get install -y \
+    libglvnd0 \
+    libgl1 \
+    libegl1 \
+    libx11-6 \
+    libxext6 \
+    libxrender1 \
+    libxrandr2 \
+    libxinerama1 \
+    libxcursor1 \
+    libxi6 \
+    mesa-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+# ------------------------------------------------------------
+# 3. Qt5 (Tesseract Qt + RViz)
+# ------------------------------------------------------------
+RUN apt-get update && apt-get install -y \
+    qtbase5-dev \
+    qtchooser \
+    qttools5-dev \
+    qttools5-dev-tools \
+    libqt5svg5-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# ------------------------------------------------------------
+# 4. ROS visualization + MoveIt
+# ------------------------------------------------------------
+RUN apt-get update && apt-get install -y \
+    ros-noetic-rviz \
+    ros-noetic-tf2-tools \
+    ros-noetic-eigen-conversions \
+    ros-noetic-geometry-msgs \
+    ros-noetic-moveit \
+    && rm -rf /var/lib/apt/lists/*
+
+# ------------------------------------------------------------
+# 5. rosdep
+# ------------------------------------------------------------
+RUN rosdep init || true && rosdep update
+
+# ------------------------------------------------------------
+# 6. Workspace (mounted from host)
+# ------------------------------------------------------------
+WORKDIR /root/tesseract_ws
+
+# ------------------------------------------------------------
+# 7. Environment (force NVIDIA GLX)
+# ------------------------------------------------------------
+RUN echo "source /opt/ros/noetic/setup.bash" >> /root/.bashrc && \
+    echo "export __GLX_VENDOR_LIBRARY_NAME=nvidia" >> /root/.bashrc && \
+    echo "export __NV_PRIME_RENDER_OFFLOAD=1" >> /root/.bashrc
+
+CMD ["bash"]

@@ -1,0 +1,5 @@
+Symlinking /root/catkin_ws/devel/share/moveit_ros_control_interface/cmake/moveit_ros_control_interfaceConfig.cmake
+Symlinking /root/catkin_ws/devel/share/moveit_ros_control_interface/cmake/moveit_ros_control_interfaceConfig-version.cmake
+Symlinking /root/catkin_ws/devel/lib/libmoveit_ros_control_interface_plugin.so.1.1.16
+Symlinking /root/catkin_ws/devel/lib/libmoveit_ros_control_interface_plugin.so
+Symlinking /root/catkin_ws/devel/lib/pkgconfig/moveit_ros_control_interface.pc
