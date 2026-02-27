@@ -1,6 +1,0 @@
-Symlinking /root/catkin_ws/devel/share/srdfdom/cmake/srdfdomConfig.cmake
-Symlinking /root/catkin_ws/devel/share/srdfdom/cmake/srdfdomConfig-version.cmake
-Symlinking /root/catkin_ws/devel/lib/libsrdfdom.so.0.6.4
-Symlinking /root/catkin_ws/devel/lib/libsrdfdom.so
-Symlinking /root/catkin_ws/devel/lib/python3/dist-packages/srdfdom/__init__.py
-Symlinking /root/catkin_ws/devel/lib/pkgconfig/srdfdom.pc

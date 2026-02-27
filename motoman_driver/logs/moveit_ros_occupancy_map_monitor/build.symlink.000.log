@@ -1,6 +1,0 @@
-Symlinking /root/catkin_ws/devel/share/moveit_ros_occupancy_map_monitor/cmake/moveit_ros_occupancy_map_monitorConfig.cmake
-Symlinking /root/catkin_ws/devel/share/moveit_ros_occupancy_map_monitor/cmake/moveit_ros_occupancy_map_monitorConfig-version.cmake
-Symlinking /root/catkin_ws/devel/lib/libmoveit_ros_occupancy_map_monitor.so.1.1.16
-Symlinking /root/catkin_ws/devel/lib/libmoveit_ros_occupancy_map_monitor.so
-Symlinking /root/catkin_ws/devel/lib/pkgconfig/moveit_ros_occupancy_map_monitor.pc
-Symlinking /root/catkin_ws/devel/lib/moveit_ros_occupancy_map_monitor/moveit_ros_occupancy_map_server

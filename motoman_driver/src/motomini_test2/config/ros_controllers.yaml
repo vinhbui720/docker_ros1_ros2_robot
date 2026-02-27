@@ -1,0 +1,20 @@
+# ros_controllers.yaml
+
+position:
+  type: position_controllers/JointTrajectoryController
+  joints:
+    - joint_1_s
+    - joint_2_l
+    - joint_3_u
+    - joint_4_r
+    - joint_5_b
+    - joint_6_t
+  constraints:
+      goal_time: 0.6
+      stopped_velocity_tolerance: 0.05
+      joint_1_s: {trajectory: 0.1, goal: 0.1}
+      joint_2_l: {trajectory: 0.1, goal: 0.1}
+      joint_3_u: {trajectory: 0.1, goal: 0.1}
+      joint_4_r: {trajectory: 0.1, goal: 0.1}
+      joint_5_b: {trajectory: 0.1, goal: 0.1}
+      joint_6_t: {trajectory: 0.1, goal: 0.1}

@@ -1,0 +1,13 @@
+# Publish joint_states
+joint_state_controller:
+  type: joint_state_controller/JointStateController
+  publish_rate: 50
+# Add this section to silence the "No p gain" errors and stabilize the robot
+gazebo_ros_control:
+  pid_gains:
+    joint_1_s: {p: 100.0, i: 0.01, d: 10.0}
+    joint_2_l: {p: 100.0, i: 0.01, d: 10.0}
+    joint_3_u: {p: 100.0, i: 0.01, d: 10.0}
+    joint_4_r: {p: 100.0, i: 0.01, d: 10.0}
+    joint_5_b: {p: 100.0, i: 0.01, d: 10.0}
+    joint_6_t: {p: 100.0, i: 0.01, d: 10.0}

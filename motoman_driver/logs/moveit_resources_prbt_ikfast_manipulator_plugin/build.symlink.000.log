@@ -1,4 +1,0 @@
-Symlinking /root/catkin_ws/devel/share/moveit_resources_prbt_ikfast_manipulator_plugin/cmake/moveit_resources_prbt_ikfast_manipulator_pluginConfig.cmake
-Symlinking /root/catkin_ws/devel/share/moveit_resources_prbt_ikfast_manipulator_plugin/cmake/moveit_resources_prbt_ikfast_manipulator_pluginConfig-version.cmake
-Symlinking /root/catkin_ws/devel/lib/libprbt_manipulator_moveit_ikfast_plugin.so
-Symlinking /root/catkin_ws/devel/lib/pkgconfig/moveit_resources_prbt_ikfast_manipulator_plugin.pc

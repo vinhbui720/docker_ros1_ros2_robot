@@ -1,5 +1,0 @@
-Symlinking /root/catkin_ws/devel/share/moveit_simple_controller_manager/cmake/moveit_simple_controller_managerConfig.cmake
-Symlinking /root/catkin_ws/devel/share/moveit_simple_controller_manager/cmake/moveit_simple_controller_managerConfig-version.cmake
-Symlinking /root/catkin_ws/devel/lib/libmoveit_simple_controller_manager.so.1.1.16
-Symlinking /root/catkin_ws/devel/lib/libmoveit_simple_controller_manager.so
-Symlinking /root/catkin_ws/devel/lib/pkgconfig/moveit_simple_controller_manager.pc
