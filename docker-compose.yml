@@ -22,7 +22,7 @@ services:
       - roscore
     user: "${MY_UID:-1000}:${MY_GID:-1000}"
     volumes:
-      - ./motoman_driver:/root/catkin_ws
+      - ./motoman_driver:/home/rosuser/catkin_ws
       - /tmp/.X11-unix:/tmp/.X11-unix:rw     
       - /dev/dri:/dev/dri:rw
     environment:
@@ -32,7 +32,7 @@ services:
       ROS_MASTER_URI: http://localhost:11311
       ROS_LOG_DIR: /tmp/ros_logs
       DISPLAY: ${DISPLAY:-:0}             
-    working_dir: /root/catkin_ws
+    working_dir: /home/rosuser/catkin_ws
     command: >
       -c "
       ./run_motomini.sh &&
@@ -50,8 +50,8 @@ services:
       - roscore
     user: "${MY_UID:-1000}:${MY_GID:-1000}"
     volumes:
-      - ./ros_bridge:/root/ros2_ws
-      - ./motoman_driver:/root/catkin_ws
+      - ./ros_bridge:/home/rosuser/ros2_ws
+      - ./motoman_driver:/home/rosuser/catkin_ws
       - /dev/shm:/dev/shm
     environment:
       ROS_IP: 127.0.0.1
@@ -59,9 +59,8 @@ services:
       ROS_DOMAIN_ID: 0
       RMW_IMPLEMENTATION: rmw_fastrtps_cpp
       ROS_LOG_DIR: /tmp/ros_logs
-      FASTRTPS_DEFAULT_PROFILES_FILE: /root/ros2_ws/fastdds_udp.xml
-      
-    working_dir: /root/ros2_ws
+      FASTRTPS_DEFAULT_PROFILES_FILE: /home/rosuser/ros2_ws/fastdds_udp.xml
+    working_dir: /home/rosuser/ros2_ws
     command: >
       -c "
       ./run_parameter_bridge.sh &&

@@ -1,46 +1,35 @@
-# --- ROS 1 & ROS 2 Build Artifacts ---
-build/
-install/
-devel/
-log/
-.catkin_workspace
-.catkin_tools
+# --- ROS 1 & ROS 2 Build Artifacts (Recursive) ---
+**/build/
+**/install/
+**/devel/
+**/log/
+**/.catkin_workspace
+**/.catkin_tools/
+**/_setup_util.py
 
 # --- ROS Generated Files ---
-# These are often generated inside src packages during compilation
 *.msg.h
 *.srv.h
-msg_gen/
-srv_gen/
-msg/*Action.msg
-msg/*ActionGoal.msg
-msg/*ActionResult.msg
-msg/*ActionFeedback.msg
+**/msg_gen/
+**/srv_gen/
+**/msg/*Action.msg
+**/msg/*ActionGoal.msg
+**/msg/*ActionResult.msg
+**/msg/*ActionFeedback.msg
 
-# --- Python ---
-__pycache__/
+# --- Python & Cache ---
+**/__pycache__/
 *.py[cod]
 *$py.class
-*.egg-info/
-.venv/
-venv/
 
-# --- C++ ---
-*.o
-*.obj
-*.so
-*.a
-*.lib
-*.dylib
-
-# --- IDE & Editor Configs (Optional but recommended) ---
+# --- IDE & Editor Configs ---
 .vscode/
 .idea/
 *.swp
-*~
 .DS_Store
 
-# --- Private Keys / Secrets (Safety net) ---
-*.pem
-*.key
-id_rsa
+# --- Docker & Environment ---
+.env
+
+# --- Specific Folders to Ignore Entirely ---
+tesseract_workspace/
