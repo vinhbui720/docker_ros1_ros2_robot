@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     locales \
     git \
+    pkg-config \
     build-essential \
     && locale-gen en_US.UTF-8
 
@@ -65,6 +66,11 @@ RUN apt-get update && apt-get install -y \
     ros-foxy-desktop \
     ros-foxy-ros1-bridge \
     ros-foxy-rmw-cyclonedds-cpp \
+    ros-foxy-control-msgs \
+    ros-foxy-trajectory-msgs \
+    ros-foxy-sensor-msgs \
+    ros-foxy-action-msgs \
+    libmodbus-dev \
     python3-argcomplete \
     ros-dev-tools \
     python3-colcon-common-extensions \

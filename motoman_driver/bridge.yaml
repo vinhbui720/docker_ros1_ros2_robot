@@ -17,5 +17,8 @@ services_2_to_1:
   - service: /robot_enable
     type: std_srvs/Trigger
 
-  - service: /robot_disable
+  - service: /tool_enable
+    type: std_srvs/Trigger
+
+  - service: /tool_disable
     type: std_srvs/Trigger
