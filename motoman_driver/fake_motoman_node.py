@@ -53,7 +53,7 @@ class FakeMotomanRobot:
 
         # --- PUBLISHERS ---
         # 1. Joint States (standard ROS)
-        self.joint_state_pub = rospy.Publisher('/joint_states', JointState, queue_size=10)
+        self.joint_state_pub = rospy.Publisher('/motomini_joint_states', JointState, queue_size=10)
         
         # 2. Robot Status (Industrial Robot standard)
         self.status_pub = rospy.Publisher('/robot_status', RobotStatus, queue_size=10)

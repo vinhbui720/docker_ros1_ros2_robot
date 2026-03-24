@@ -25,7 +25,7 @@ namespace gantry_controller
 
         // ── ROS interfaces ────────────────────────────────────────────────────────
         joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>(
-            "joint_states", 10);
+            "gantry_joint_states", 10);
 
         traj_sub_ = this->create_subscription<trajectory_msgs::msg::JointTrajectory>(
             "/gantry_controller/joint_trajectory", 10,

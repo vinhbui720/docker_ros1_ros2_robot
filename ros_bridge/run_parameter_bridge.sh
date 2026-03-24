@@ -58,3 +58,4 @@ source "$ROS2_WS/install/setup.bash"
 echo "Starting ROS1-ROS2 Bridge..."
 # exec replaces the shell process with the bridge
 exec ros2 run ros1_bridge parameter_bridge
+# exec ros2 launch env_joint_states_publish joint_states_merger.launch.py

@@ -3,7 +3,7 @@ topics:
     type: trajectory_msgs/msg/JointTrajectory
     queue_size: 1
 
-  - topic: /joint_states
+  - topic: /motomini_joint_states
     type: sensor_msgs/msg/JointState
     queue_size: 10
 

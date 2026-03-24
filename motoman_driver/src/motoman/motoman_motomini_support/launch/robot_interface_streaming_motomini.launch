@@ -9,10 +9,15 @@
     robot_interface_streaming_motomini.launch robot_ip:=<value> controller:=<yrc1000>
 -->
 <launch>
+
   <arg name="robot_ip" />
 
   <!-- controller: Controller name (yrc1000) -->
   <arg name="controller"/>
+  
+  <remap from="/joint_states" to="/motomini_joint_states" />
+
+  <include file="$(find motoman_motomini_support)/launch/load_motomini.launch" />
 
   <rosparam command="load" file="$(find motoman_motomini_support)/config/joint_names_motomini.yaml" />
 

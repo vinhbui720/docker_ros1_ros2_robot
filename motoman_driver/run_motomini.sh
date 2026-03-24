@@ -21,5 +21,5 @@ source /home/rosuser/catkin_ws/devel/setup.bash
 
 # 4. Launch the Motoman interface
 roslaunch motoman_motomini_support robot_interface_streaming_motomini.launch \
-  robot_ip:=192.168.1.16 \
+  robot_ip:=192.168.1.14 \
   controller:=yrc1000

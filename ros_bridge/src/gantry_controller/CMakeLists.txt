@@ -24,7 +24,11 @@ pkg_check_modules(LIBMODBUS REQUIRED libmodbus)
 add_executable(modbus_hw_bridge
   src/modbus_hw_bridge.cpp
 )
-
+add_executable(gantry_demo src/gantry_demo.cpp)
+ament_target_dependencies(gantry_demo
+  rclcpp
+  sensor_msgs
+)
 target_include_directories(modbus_hw_bridge
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -43,7 +47,7 @@ ament_target_dependencies(modbus_hw_bridge
 )
 
 # ────────────────────────────── Install ───────────────────────────────────────
-install(TARGETS modbus_hw_bridge
+install(TARGETS modbus_hw_bridge gantry_demo
   DESTINATION lib/${PROJECT_NAME}
 )
 

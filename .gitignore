@@ -3,6 +3,7 @@
 **/install/
 **/devel/
 **/log/
+**/logs/
 **/.catkin_workspace
 **/.catkin_tools/
 **/_setup_util.py
@@ -33,3 +34,5 @@
 
 # --- Specific Folders to Ignore Entirely ---
 tesseract_workspace/
+
+core.*
