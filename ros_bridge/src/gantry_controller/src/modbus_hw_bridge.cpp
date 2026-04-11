@@ -174,8 +174,6 @@ namespace gantry_controller
             return;
         }
 
-        RCLCPP_INFO(get_logger(), "Command sent → Axis1: %d  Axis2: %d (PLC units)",
-                    pos_x_plc, pos_z_plc);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════

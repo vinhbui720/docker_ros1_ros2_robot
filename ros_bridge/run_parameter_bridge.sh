@@ -27,7 +27,7 @@ if [ ! -d "$ROS2_WS/install/ros1_bridge" ]; then
         
         # Build bridge. We use --cmake-force-configure to ensure it 
         # re-detects the ROS 1 packages we just sourced.
-        colcon build --symlink-install --packages-select ros1_bridge --cmake-force-configure
+        colcon build --symlink-install --packages-select ros1_bridge --cmake-force-configure --parallel-workers 1
     )
     
     echo "-------------------------------------------------------"
@@ -38,11 +38,25 @@ fi
 # --- 3. RUNNING THE BRIDGE ---
 # We need to load ROS 1 params first
 echo "Loading bridge parameters into ROS 1 Master..."
-source /opt/ros/noetic/setup.bash
+
 if [ -f "$CATKIN_WS/devel/setup.bash" ]; then
     source "$CATKIN_WS/devel/setup.bash"
 fi
-rosparam load "$CATKIN_WS/bridge.yaml"
+
+# Wait for roscore to be ready
+echo "Waiting for roscore to be ready..."
+max_attempts=30
+attempt=0
+while ! rostopic list &>/dev/null; do
+    attempt=$((attempt+1))
+    if [ $attempt -ge $max_attempts ]; then
+        echo "ERROR: roscore did not start within timeout"
+        exit 1
+    fi
+    echo "Waiting for roscore... ($attempt/$max_attempts)"
+    sleep 1
+done
+echo "roscore is ready!"
 
 # Now, we CLEAN the environment for the ROS 2 runtime
 echo "Cleaning ROS 1 environment variables..."
@@ -50,10 +64,10 @@ unset ROS_PACKAGE_PATH
 unset ROS_ROOT
 unset ROS_VERSION
 unset ROS_PYTHON_VERSION
-
+source /opt/ros/noetic/setup.bash
+rosparam load "$ROS2_WS/bridge.yaml"
 # Source ROS 2 and the newly built bridge
 source /opt/ros/foxy/setup.bash
-source "$ROS2_WS/install/setup.bash"
 
 echo "Starting ROS1-ROS2 Bridge..."
 # exec replaces the shell process with the bridge

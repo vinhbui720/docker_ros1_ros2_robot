@@ -27,9 +27,7 @@ if [ ! -d "$ROS2_WS/install/gantry_controller" ] || [ ! -d "$ROS2_WS/install/env
 fi
 
 # Source ROS 2 base and the local workspace
-source /opt/ros/foxy/setup.bash
-cd "$ROS2_WS"
-source install/setup.bash 
+source $ROS2_WS/install/setup.bash 
 
 # Launch the node
-ros2 launch env_joint_states_publish joint_states_merger.launch.py
+exec ros2 launch env_joint_states_publish joint_states_merger.launch.py simulation:=false

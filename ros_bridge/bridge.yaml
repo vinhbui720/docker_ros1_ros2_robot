@@ -7,14 +7,11 @@ topics:
     type: sensor_msgs/msg/JointState
     queue_size: 10
 
-services_1_to_2:
+services_2_to_1:
   - service: /robot_enable
     type: std_srvs/Trigger
 
   - service: /robot_disable
-    type: std_srvs/Trigger
-services_2_to_1:
-  - service: /robot_enable
     type: std_srvs/Trigger
 
   - service: /tool_enable

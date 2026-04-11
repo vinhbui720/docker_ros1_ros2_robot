@@ -1,0 +1,14 @@
+<launch>
+  <arg name="start_fake_motomini" default="true" />
+
+  <node if="$(arg start_fake_motomini)"
+        pkg="motomini_tool"
+        type="fake_motomini_node"
+        name="fake_motomini_node"
+        output="screen" />
+
+      <node pkg="motomini_tool"
+        type="tool_service_node"
+        name="motomini_tool_service"
+        output="screen" />
+</launch>

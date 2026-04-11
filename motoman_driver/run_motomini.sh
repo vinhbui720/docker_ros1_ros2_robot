@@ -4,6 +4,10 @@ set -e
 # 1. Source the main ROS installation
 source /opt/ros/noetic/setup.bash
 
+# Ensure roslaunch can always write logs as current user.
+export ROS_LOG_DIR="/home/rosuser/.ros/log"
+mkdir -p "${ROS_LOG_DIR}"
+
 # 2. Check if the workspace has been built yet
 if [ ! -f "/home/rosuser/catkin_ws/devel/setup.bash" ]; then
     echo "-------------------------------------------------------"
@@ -19,7 +23,15 @@ fi
 # 3. Source your local workspace
 source /home/rosuser/catkin_ws/devel/setup.bash
 
-# 4. Launch the Motoman interface
-roslaunch motoman_motomini_support robot_interface_streaming_motomini.launch \
+# 4. Wait for external ROS master started by docker-compose service 'roscore'.
+echo "Waiting for ROS master at ${ROS_MASTER_URI:-http://localhost:11311} ..."
+until rosparam get /rosdistro >/dev/null 2>&1; do
+  sleep 1
+done
+echo "ROS master is available."
+
+# 5. Launch the Motoman interface
+exec roslaunch --wait --screen motoman_motomini_support robot_interface_streaming_motomini.launch \
   robot_ip:=192.168.1.14 \
-  controller:=yrc1000
+  controller:=yrc1000 \
+  simulation:=false

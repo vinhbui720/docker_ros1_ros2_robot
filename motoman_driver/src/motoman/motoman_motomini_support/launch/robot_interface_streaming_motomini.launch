@@ -14,6 +14,7 @@
 
   <!-- controller: Controller name (yrc1000) -->
   <arg name="controller"/>
+  <arg name="simulation" default="false" />
   
   <remap from="/joint_states" to="/motomini_joint_states" />
 
@@ -21,7 +22,11 @@
 
   <rosparam command="load" file="$(find motoman_motomini_support)/config/joint_names_motomini.yaml" />
 
-  <include file="$(find motoman_driver)/launch/robot_interface_streaming_$(arg controller).launch">
+  <include file="$(find motomini_tool)/launch/motomini_tool.launch">
+    <arg name="start_fake_motomini" value="$(arg simulation)" />
+  </include>
+
+  <include unless="$(arg simulation)" file="$(find motoman_driver)/launch/robot_interface_streaming_$(arg controller).launch">
     <arg name="robot_ip"   value="$(arg robot_ip)" />
   </include>
 </launch>

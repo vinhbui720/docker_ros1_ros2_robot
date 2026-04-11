@@ -1,14 +1,14 @@
-Linked: (/home/rosuser/catkin_ws/devel/.private/motoman_driver/lib/libmotoman_simple_message.so, /home/rosuser/catkin_ws/devel/lib/libmotoman_simple_message.so)
-Linked: (/home/rosuser/catkin_ws/devel/.private/motoman_driver/lib/libmotoman_industrial_robot_client_bswap.so, /home/rosuser/catkin_ws/devel/lib/libmotoman_industrial_robot_client_bswap.so)
-Linked: (/home/rosuser/catkin_ws/devel/.private/motoman_driver/lib/libmotoman_industrial_robot_client.so, /home/rosuser/catkin_ws/devel/lib/libmotoman_industrial_robot_client.so)
-Linked: (/home/rosuser/catkin_ws/devel/.private/motoman_driver/lib/libmotoman_simple_message_bswap.so, /home/rosuser/catkin_ws/devel/lib/libmotoman_simple_message_bswap.so)
-Linked: (/home/rosuser/catkin_ws/devel/.private/motoman_driver/lib/motoman_driver/motoman_driver_joint_trajectory_action, /home/rosuser/catkin_ws/devel/lib/motoman_driver/motoman_driver_joint_trajectory_action)
-Linked: (/home/rosuser/catkin_ws/devel/.private/motoman_driver/lib/motoman_driver/robot_state, /home/rosuser/catkin_ws/devel/lib/motoman_driver/robot_state)
-Linked: (/home/rosuser/catkin_ws/devel/.private/motoman_driver/lib/motoman_driver/robot_state_bswap, /home/rosuser/catkin_ws/devel/lib/motoman_driver/robot_state_bswap)
-Linked: (/home/rosuser/catkin_ws/devel/.private/motoman_driver/lib/motoman_driver/motion_streaming_interface_bswap, /home/rosuser/catkin_ws/devel/lib/motoman_driver/motion_streaming_interface_bswap)
-Linked: (/home/rosuser/catkin_ws/devel/.private/motoman_driver/lib/motoman_driver/io_relay_bswap, /home/rosuser/catkin_ws/devel/lib/motoman_driver/io_relay_bswap)
-Linked: (/home/rosuser/catkin_ws/devel/.private/motoman_driver/lib/motoman_driver/motion_streaming_interface, /home/rosuser/catkin_ws/devel/lib/motoman_driver/motion_streaming_interface)
-Linked: (/home/rosuser/catkin_ws/devel/.private/motoman_driver/lib/motoman_driver/io_relay, /home/rosuser/catkin_ws/devel/lib/motoman_driver/io_relay)
-Linked: (/home/rosuser/catkin_ws/devel/.private/motoman_driver/lib/pkgconfig/motoman_driver.pc, /home/rosuser/catkin_ws/devel/lib/pkgconfig/motoman_driver.pc)
-Linked: (/home/rosuser/catkin_ws/devel/.private/motoman_driver/share/motoman_driver/cmake/motoman_driverConfig-version.cmake, /home/rosuser/catkin_ws/devel/share/motoman_driver/cmake/motoman_driverConfig-version.cmake)
-Linked: (/home/rosuser/catkin_ws/devel/.private/motoman_driver/share/motoman_driver/cmake/motoman_driverConfig.cmake, /home/rosuser/catkin_ws/devel/share/motoman_driver/cmake/motoman_driverConfig.cmake)
+Symlinking /home/rosuser/catkin_ws/devel/lib/libmotoman_simple_message.so
+Symlinking /home/rosuser/catkin_ws/devel/lib/libmotoman_industrial_robot_client_bswap.so
+Symlinking /home/rosuser/catkin_ws/devel/lib/libmotoman_industrial_robot_client.so
+Symlinking /home/rosuser/catkin_ws/devel/lib/libmotoman_simple_message_bswap.so
+Symlinking /home/rosuser/catkin_ws/devel/lib/motoman_driver/motoman_driver_joint_trajectory_action
+Symlinking /home/rosuser/catkin_ws/devel/lib/motoman_driver/robot_state
+Symlinking /home/rosuser/catkin_ws/devel/lib/motoman_driver/robot_state_bswap
+Symlinking /home/rosuser/catkin_ws/devel/lib/motoman_driver/motion_streaming_interface_bswap
+Symlinking /home/rosuser/catkin_ws/devel/lib/motoman_driver/io_relay_bswap
+Symlinking /home/rosuser/catkin_ws/devel/lib/motoman_driver/motion_streaming_interface
+Symlinking /home/rosuser/catkin_ws/devel/lib/motoman_driver/io_relay
+Symlinking /home/rosuser/catkin_ws/devel/lib/pkgconfig/motoman_driver.pc
+Symlinking /home/rosuser/catkin_ws/devel/share/motoman_driver/cmake/motoman_driverConfig-version.cmake
+Symlinking /home/rosuser/catkin_ws/devel/share/motoman_driver/cmake/motoman_driverConfig.cmake

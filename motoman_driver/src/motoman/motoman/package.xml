@@ -31,6 +31,7 @@
   <exec_depend>motoman_mh50_support</exec_depend>
   <exec_depend>motoman_mh5_support</exec_depend>
   <exec_depend>motoman_motomini_support</exec_depend>
+  <exec_depend>motomini_tool</exec_depend>
   <exec_depend>motoman_motopos_d500_support</exec_depend>
   <exec_depend>motoman_ms210_support</exec_depend>
   <exec_depend>motoman_msgs</exec_depend>
