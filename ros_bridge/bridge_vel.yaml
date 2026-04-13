@@ -2,16 +2,14 @@ topics:
   - topic: /joint_path_command
     type: trajectory_msgs/msg/JointTrajectory
     queue_size: 1
+  - topic: /joint_command
+    type: trajectory_msgs/msg/JointTrajectory
+    queue_size: 1
   - topic: /motomini_joint_states
     type: sensor_msgs/msg/JointState
     queue_size: 10
 
 services_2_to_1:
-  - service: /robot_enable
-    type: std_srvs/Trigger
-
-  - service: /robot_disable
-    type: std_srvs/Trigger
 
   - service: /tool_enable
     type: std_srvs/Trigger

@@ -6,6 +6,9 @@ services:
         - USER_UID=${MY_UID:-1000}
         - USER_GID=${MY_GID:-1000}
     image: thesis:latest
+    profiles:
+      - traj_controller
+      - vel_controller
     container_name: roscore
     network_mode: host
     restart: "no"
@@ -19,6 +22,8 @@ services:
 
   motoman_controller:
     image: thesis:latest
+    profiles:
+      - traj_controller
     container_name: motoman_controller
     network_mode: host
     restart: "no"
@@ -37,12 +42,16 @@ services:
       ROS_MASTER_URI: http://localhost:11311
       ROS_LOG_DIR: /tmp/ros_logs
       DISPLAY: ${DISPLAY:-:0}
+      SIMULATION: ${SIM_MODE:-false}
+      ROBOT_IP: ${TARGET_IP:-192.168.1.14}
     working_dir: /home/rosuser/catkin_ws
     # command: -c "echo 'Motoman Controller Ready'; sleep infinity"
     command: "./run_motomini.sh"
 
   motoman_vel_controller:
     image: thesis:latest
+    profiles:
+      - vel_controller
     container_name: motoman_vel_controller
     network_mode: host
     restart: "no"
@@ -61,11 +70,16 @@ services:
       ROS_MASTER_URI: http://localhost:11311
       ROS_LOG_DIR: /tmp/ros_logs
       DISPLAY: ${DISPLAY:-:0}
+      SIMULATION: ${SIM_MODE:-false}
+      ROBOT_IP: ${TARGET_IP:-192.168.1.14}
     working_dir: /home/rosuser/catkin_vel_ws
-    command: -c "echo 'Motoman Controller Ready'; sleep infinity"
-    # command: "./run_motomini_vel.sh"
+    # command: -c "echo 'Motoman Controller Ready'; sleep infinity"
+    command: "./run_motomini_vel.sh"
   ros1_bridge:
     image: thesis:latest
+    profiles:
+      - traj_controller
+      - vel_controller
     container_name: ros1_bridge
     network_mode: host
     restart: "no"
@@ -88,8 +102,12 @@ services:
     # command: -c "echo 'Bridge Ready'; sleep infinity"
     command: >
       -c " ./run_parameter_bridge.sh && echo 'Starting ROS1-ROS2 Bridge...' && tail -f /dev/null "
+    # command: [ "/bin/bash", "-c", "./run_parameter_bridge.sh && echo 'Starting ROS1-ROS2 Bridge...' && tail -f /dev/null" ]
   gandtry_driver:
     image: thesis:latest
+    profiles:
+      - traj_controller
+      - vel_controller
     container_name: gandtry_driver
     network_mode: host
     restart: "no"

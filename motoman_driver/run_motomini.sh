@@ -30,8 +30,17 @@ until rosparam get /rosdistro >/dev/null 2>&1; do
 done
 echo "ROS master is available."
 
+ROBOT_IP="${ROBOT_IP:-192.168.1.14}"
+SIMULATION="${SIMULATION:-false}"
+echo "-------------------------------------------------------"
+echo "  SIMULATION : ${SIMULATION}"
+if [ "${SIMULATION}" != "true" ]; then
+    echo "  ROBOT_IP   : ${ROBOT_IP}"
+fi
+echo "-------------------------------------------------------"
+
 # 5. Launch the Motoman interface
 exec roslaunch --wait --screen motoman_motomini_support robot_interface_streaming_motomini.launch \
-  robot_ip:=192.168.1.14 \
-  controller:=yrc1000 \
-  simulation:=false
+    robot_ip:=${ROBOT_IP} \
+    controller:=yrc1000 \
+    simulation:=${SIMULATION}

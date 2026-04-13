@@ -38,7 +38,7 @@ fi
 # --- 3. RUNNING THE BRIDGE ---
 # We need to load ROS 1 params first
 echo "Loading bridge parameters into ROS 1 Master..."
-
+source /opt/ros/noetic/setup.bash
 if [ -f "$CATKIN_WS/devel/setup.bash" ]; then
     source "$CATKIN_WS/devel/setup.bash"
 fi
