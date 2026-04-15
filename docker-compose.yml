@@ -73,8 +73,8 @@ services:
       SIMULATION: ${SIM_MODE:-false}
       ROBOT_IP: ${TARGET_IP:-192.168.1.14}
     working_dir: /home/rosuser/catkin_vel_ws
-    # command: -c "echo 'Motoman Controller Ready'; sleep infinity"
-    command: "./run_motomini_vel.sh"
+    command: -c "echo 'Motoman Controller Ready'; sleep infinity"
+    # command: "./run_motomini_vel.sh"
   ros1_bridge:
     image: thesis:latest
     profiles:
