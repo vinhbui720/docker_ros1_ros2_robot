@@ -105,8 +105,6 @@ class KeyboardJogger:
 
         self.speed            = SPEED_INITIAL
         # Latched jog command: set by keypress, cleared only by SPACE or same-key toggle.
-        # This avoids the ~500 ms OS keyboard-repeat gap that made the robot stop
-        # after one cycle when holding a key.
         self.latched_velocity = [0.0] * self.n_joints   # persists until SPACE/toggle
         self.desired_velocity = [0.0] * self.n_joints   # what we actually command
 
@@ -150,12 +148,7 @@ class KeyboardJogger:
 
     # ------------------------------------------------------------------
     def _send(self, positions, velocities, time_sec):
-        """Publish a single JointTrajectoryPoint to /joint_command.
-
-        jointCommandCB on the controller reads msg->points[0] only, so we
-        always publish exactly ONE point per message.
-        validFields will be 0x07 (time+pos+vel) because both lists are non-empty.
-        """
+        """Publish a single JointTrajectoryPoint to /joint_command."""
         msg = JointTrajectory()
         msg.header.stamp = rospy.Time.now()
         msg.joint_names  = self.joint_names
@@ -177,12 +170,6 @@ class KeyboardJogger:
 
         while not rospy.is_shutdown():
             # ---- Read all pending keystrokes this cycle ---------------
-            # KEY LATCH MODEL: pressing a motion key latches that joint/direction
-            # and keeps it active until SPACE is pressed or the same key is pressed
-            # again (toggle off). This avoids depending on OS key-repeat timing
-            # (~500 ms gap between first press and repeats) which caused the robot
-            # to stop after every single cycle.
-
             try:
                 while True:
                     ch = stdscr.getch()
@@ -196,24 +183,14 @@ class KeyboardJogger:
                     c = chr(ch)
                     if c in FORWARD_KEYS:
                         idx = FORWARD_KEYS.index(c)
-                        new_latch = [0.0] * self.n_joints
-                        new_latch[idx] = self.speed
-                        # same key while already jogging that joint → toggle off (stop)
-                        if self.latched_velocity == new_latch:
-                            self.latched_velocity = [0.0] * self.n_joints
-                        else:
-                            self.latched_velocity = new_latch
+                        self.latched_velocity = [0.0] * self.n_joints
+                        self.latched_velocity[idx] = self.speed
                     elif c in REVERSE_KEYS:
                         idx = REVERSE_KEYS.index(c)
-                        new_latch = [0.0] * self.n_joints
-                        new_latch[idx] = -self.speed
-                        if self.latched_velocity == new_latch:
-                            self.latched_velocity = [0.0] * self.n_joints
-                        else:
-                            self.latched_velocity = new_latch
+                        self.latched_velocity = [0.0] * self.n_joints
+                        self.latched_velocity[idx] = -self.speed
                     elif c == "=":
                         self.speed = min(SPEED_MAX, round(self.speed + SPEED_STEP, 4))
-                        # update magnitude of any active latch
                         for i in range(self.n_joints):
                             if self.latched_velocity[i] > 0:
                                 self.latched_velocity[i] = self.speed
@@ -232,39 +209,46 @@ class KeyboardJogger:
                 pass
 
             self.desired_velocity = list(self.latched_velocity)
-
             is_moving = any(abs(v) > 1e-9 for v in self.desired_velocity)
 
             # Snapshot actual state (protected read)
             with self.state_lock:
                 actual_pos = list(self.actual_positions)
 
-            # ---- State machine ----------------------------------------
+            # ---- State Machine Transitions ----------------------------
+            
+            # 1. Evaluate if we need to instantly change states based on new input
+            if self.state == STATE_IDLE and is_moving:
+                self.session_seq     = 0
+                self.stream_time_sec = 0.0
+                self.state           = STATE_SEED
+                
+            elif self.state == STATE_STOPPING and is_moving:
+                # SEAMLESS RESUME: User pressed a key while decelerating!
+                # Instead of waiting for idle, we immediately resume jogging.
+                # The stream timer continues perfectly.
+                self.state = STATE_JOGGING
+                # CRITICAL FIX: The robot may have coasted past the old command_positions
+                # while stopping. Re-anchor the active joints to actual_pos so the new
+                # forward trajectory doesn't start behind the robot!
+                for i in range(self.n_joints):
+                    if abs(self.desired_velocity[i]) > 1e-9:
+                        self.command_positions[i] = actual_pos[i]
+
+            # ---- State Machine Execution ------------------------------
+            
             if self.state == STATE_IDLE:
-                # Keep command_positions anchored to actual while idle so the
-                # next seed check always passes.
+                # Keep command_positions anchored to actual while idle
                 self.command_positions = list(actual_pos)
-                # Also clear any stale latch so a stop doesn't auto-restart.
                 if not is_moving:
                     self.latched_velocity = [0.0] * self.n_joints
 
-                if is_moving:
-                    self.session_seq     = 0
-                    self.stream_time_sec = 0.0
-                    self.state           = STATE_SEED
-
-            # --- Send the seed point (seq=0 -> InitTrajPointFull) ------
             elif self.state == STATE_SEED:
-                # command_positions == actual_pos (anchored in IDLE).
-                # Send with seq=0, vel=0, time=0.0.
-                # Controller accepts this if pos matches servo command within
-                # START_MAX_PULSE_DEVIATION (10 pulses ~ 0.001 rad).
                 self._send(self.command_positions, [0.0] * self.n_joints, 0.0)
                 self.session_seq     = 1
-                self.stream_time_sec = DT   # first real point arrives in one DT
+                self.stream_time_sec = DT
                 self.state           = STATE_JOGGING
 
-            # --- Stream motion points (seq=1,2,3 -> AddTrajPointFull) --
             elif self.state == STATE_JOGGING:
                 if is_moving:
                     new_cmd = list(self.command_positions)
@@ -283,8 +267,7 @@ class KeyboardJogger:
                         lo, hi = JOINT_LIMITS[i][0], JOINT_LIMITS[i][1]
                         new_cmd[i] = max(lo, min(hi, new_cmd[i]))
 
-                        # latency lead clamp: command can be at most MAX_LEAD
-                        # ahead of actual. Bounds the buffer regardless of WiFi lag.
+                        # latency lead clamp bounds the buffer
                         lead = new_cmd[i] - actual_pos[i]
                         if abs(lead) > MAX_LEAD:
                             new_cmd[i] = actual_pos[i] + MAX_LEAD * (1.0 if lead > 0 else -1.0)
@@ -296,18 +279,18 @@ class KeyboardJogger:
                     self._send(self.command_positions, new_vel, self.stream_time_sec)
                     self.session_seq     += 1
                     self.stream_time_sec += DT
-
                 else:
+                    # Input stopped. Transition to STOPPING and send the first hold point
                     self.state = STATE_STOPPING
+                    self._send(self.command_positions, [0.0] * self.n_joints, self.stream_time_sec)
+                    self.stream_time_sec += DT
 
-            # --- Hold final position with vel=0 until robot catches up -
             elif self.state == STATE_STOPPING:
-                # command_positions is the final waypoint from last JOGGING cycle.
-                # Send it unchanged with vel=0. Controller interpolates to this
-                # point and decelerates forward -- no backward velocity commanded.
+                # Command velocity 0 at the final lead position.
                 self._send(self.command_positions, [0.0] * self.n_joints, self.stream_time_sec)
                 self.stream_time_sec += DT
 
+                # Only go to IDLE if the physical robot has caught up to the command
                 max_err = max(abs(self.command_positions[i] - actual_pos[i])
                               for i in range(self.n_joints))
                 if max_err < 0.01:   # ~0.6 deg
