@@ -64,10 +64,10 @@ unset ROS_PACKAGE_PATH
 unset ROS_ROOT
 unset ROS_VERSION
 unset ROS_PYTHON_VERSION
-source /opt/ros/noetic/setup.bash
-rosparam load "$ROS2_WS/bridge.yaml"
+# source /opt/ros/noetic/setup.bash
 # Source ROS 2 and the newly built bridge
 source /opt/ros/foxy/setup.bash
+rosparam load "$ROS2_WS/bridge.yaml"
 
 echo "Starting ROS1-ROS2 Bridge..."
 # exec replaces the shell process with the bridge

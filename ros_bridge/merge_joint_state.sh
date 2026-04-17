@@ -30,4 +30,4 @@ fi
 source $ROS2_WS/install/setup.bash 
 
 # Launch the node
-exec ros2 launch env_joint_states_publish joint_states_merger.launch.py simulation:=false
+exec ros2 launch env_joint_states_publish joint_states_merger.launch.py simulation:=true

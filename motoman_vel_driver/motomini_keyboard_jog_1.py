@@ -17,7 +17,7 @@ Design principles (derived from MotoPlus MotionServer.c source):
 Latency strategy (WiFi / Ethernet):
   - Publish at 25 Hz (40 ms interval). Controller processes each point in ~24 ms (3x8 ms
     interpolPeriod). 40 ms > 24 ms -> BUSY replies are rare.
-  - command_positions is clamped to within MAX_LEAD (0.04 rad) of actual_positions so the
+  - command_positions is clamped to within MAX_LEAD of actual_positions so the
     streaming buffer can never run away from the real robot regardless of latency.
   - On each cycle we publish: target = actual + speed_direction * DT.
     This is directly latency-tolerant: if the network is slow, actual just catches up.
@@ -49,8 +49,8 @@ SPEED_MAX       = 1.0
 SPEED_STEP      = 0.02
 
 # How far ahead of actual_position the command is allowed to run.
-# Keeps START_MAX_PULSE_DEVIATION check passing on the next InitTrajPoint.
-MAX_LEAD        = 0.04     # rad  (~2.3 deg)
+# 0.10 rad bounds the buffer to ~5.7 degrees. Prevents lingering while absorbing network lag.
+MAX_LEAD        = 0.10     # rad
 
 # dt we assume for position integration (== 1/PUBLISH_RATE).
 # We do NOT use measured dt to avoid integrating runaway positions when a loop
@@ -73,7 +73,6 @@ REVERSE_KEYS = list("qwerty")
 STATE_IDLE     = 0   # not streaming; waiting for keypress
 STATE_SEED     = 1   # one cycle: send seq=0 seed to InitTrajPointFull
 STATE_JOGGING  = 2   # streaming motion points (seq=1,2,3,...)
-STATE_STOPPING = 3   # key released; stream vel=0 until pos error < threshold
 
 
 class KeyboardJogger:
@@ -196,21 +195,12 @@ class KeyboardJogger:
                     c = chr(ch)
                     if c in FORWARD_KEYS:
                         idx = FORWARD_KEYS.index(c)
-                        new_latch = [0.0] * self.n_joints
-                        new_latch[idx] = self.speed
-                        # same key while already jogging that joint → toggle off (stop)
-                        if self.latched_velocity == new_latch:
-                            self.latched_velocity = [0.0] * self.n_joints
-                        else:
-                            self.latched_velocity = new_latch
+                        self.latched_velocity = [0.0] * self.n_joints
+                        self.latched_velocity[idx] = self.speed
                     elif c in REVERSE_KEYS:
                         idx = REVERSE_KEYS.index(c)
-                        new_latch = [0.0] * self.n_joints
-                        new_latch[idx] = -self.speed
-                        if self.latched_velocity == new_latch:
-                            self.latched_velocity = [0.0] * self.n_joints
-                        else:
-                            self.latched_velocity = new_latch
+                        self.latched_velocity = [0.0] * self.n_joints
+                        self.latched_velocity[idx] = -self.speed
                     elif c == "=":
                         self.speed = min(SPEED_MAX, round(self.speed + SPEED_STEP, 4))
                         # update magnitude of any active latch
@@ -238,109 +228,106 @@ class KeyboardJogger:
             # Snapshot actual state (protected read)
             with self.state_lock:
                 actual_pos = list(self.actual_positions)
-                actual_vel = list(self.actual_velocities) # <--- Added actual velocity tracking here
+                actual_vel = list(self.actual_velocities) 
 
-            # ---- State machine ----------------------------------------
+            # ---- State Machine Transitions ----------------------------
+            # Separating transitions from execution ensures seamless resumption.
             if self.state == STATE_IDLE:
-                # Keep command_positions anchored to actual while idle so the
-                # next seed check always passes.
-                self.command_positions = list(actual_pos)
-                # Also clear any stale latch so a stop doesn't auto-restart.
-                if not is_moving:
-                    self.latched_velocity = [0.0] * self.n_joints
-
                 if is_moving:
                     self.session_seq     = 0
                     self.stream_time_sec = 0.0
                     self.state           = STATE_SEED
+                else:
+                    # Keep command_positions anchored to actual while idle 
+                    # so the next seed check always passes.
+                    self.command_positions = list(actual_pos)
+                    self.latched_velocity = [0.0] * self.n_joints
 
-            # --- Send the seed point (seq=0 -> InitTrajPointFull) ------
-            elif self.state == STATE_SEED:
-                # command_positions == actual_pos (anchored in IDLE).
-                # Send with seq=0, vel=0, time=0.0.
-                # Controller accepts this if pos matches servo command within
-                # START_MAX_PULSE_DEVIATION (10 pulses ~ 0.001 rad).
+            elif self.state == STATE_JOGGING:
+                # FIX: We must NOT transition back to STATE_IDLE and stop sending data.
+                # If the data stream stops, the Yaskawa controller's trajectory job will 
+                # time out and drop out of streaming mode, ignoring any future key presses.
+                # We simply remain in STATE_JOGGING and naturally stream 0.0 velocities.
+                pass
+
+            # ---- State Machine Execution ------------------------------
+            if self.state == STATE_SEED:
                 self._send(self.command_positions, [0.0] * self.n_joints, 0.0)
                 self.session_seq     = 1
                 self.stream_time_sec = DT   # first real point arrives in one DT
                 self.state           = STATE_JOGGING
 
-            # --- Stream motion points (seq=1,2,3 -> AddTrajPointFull) --
             elif self.state == STATE_JOGGING:
-                if is_moving:
-                    new_cmd = list(self.command_positions)
-                    new_vel = [0.0] * self.n_joints
+                new_cmd = list(self.command_positions)
+                new_vel = [0.0] * self.n_joints
 
-                    for i in range(self.n_joints):
-                        v = self.desired_velocity[i]
+                for i in range(self.n_joints):
+                    v = self.desired_velocity[i]
 
-                        # clamp to joint velocity limit
-                        max_v = JOINT_LIMITS[i][2]
-                        v = max(-max_v, min(max_v, v))
+                    # clamp to joint velocity limit
+                    max_v = JOINT_LIMITS[i][2]
+                    v = max(-max_v, min(max_v, v))
 
-                        new_cmd[i] += v * DT
+                    new_cmd[i] += v * DT
 
-                        # soft position limit
-                        lo, hi = JOINT_LIMITS[i][0], JOINT_LIMITS[i][1]
-                        new_cmd[i] = max(lo, min(hi, new_cmd[i]))
+                    # soft position limit
+                    lo, hi = JOINT_LIMITS[i][0], JOINT_LIMITS[i][1]
+                    new_cmd[i] = max(lo, min(hi, new_cmd[i]))
 
-                        # latency lead clamp: command can be at most MAX_LEAD
-                        # ahead of actual. Bounds the buffer regardless of WiFi lag.
-                        lead = new_cmd[i] - actual_pos[i]
-                        if abs(lead) > MAX_LEAD:
-                            new_cmd[i] = actual_pos[i] + MAX_LEAD * (1.0 if lead > 0 else -1.0)
-                            v = (new_cmd[i] - self.command_positions[i]) / DT
+                    # latency lead clamp: command can be at most MAX_LEAD
+                    # ahead of actual. Bounds the buffer regardless of WiFi lag.
+                    lead = new_cmd[i] - actual_pos[i]
+                    if abs(lead) > MAX_LEAD:
+                        new_cmd[i] = actual_pos[i] + MAX_LEAD * (1.0 if lead > 0 else -1.0)
+                        # Mathematically safe velocity reduction to maintain continuity 
+                        # without causing an ALARM 4414 jump.
+                        v = (new_cmd[i] - self.command_positions[i]) / DT
 
-                        new_vel[i] = v
+                    new_vel[i] = v
 
-                    self.command_positions = new_cmd
-                    self._send(self.command_positions, new_vel, self.stream_time_sec)
-                    self.session_seq     += 1
-                    self.stream_time_sec += DT
-
-                else:
-                    self.state = STATE_STOPPING
-
-            # --- Hold final position with vel=0 until robot catches up -
-            elif self.state == STATE_STOPPING:
-                # command_positions is the final waypoint from last JOGGING cycle.
-                # Send it unchanged with vel=0. Controller interpolates to this
-                # point and decelerates forward -- no backward velocity commanded.
-                self._send(self.command_positions, [0.0] * self.n_joints, self.stream_time_sec)
+                self.command_positions = new_cmd
+                self._send(self.command_positions, new_vel, self.stream_time_sec)
+                self.session_seq     += 1
                 self.stream_time_sec += DT
-
-                max_err = max(abs(self.command_positions[i] - actual_pos[i])
-                              for i in range(self.n_joints))
-                if max_err < 0.1:   # ~0.6 deg
-                    self.state = STATE_IDLE
 
             # ---- UI ---------------------------------------------------
             try:
-                state_names = {STATE_IDLE: "IDLE    ", STATE_SEED: "SEED    ",
-                               STATE_JOGGING: "JOGGING ", STATE_STOPPING: "STOPPING"}
+                state_str = "IDLE   "
+                if self.state == STATE_SEED:
+                    state_str = "SEEDING"
+                elif self.state == STATE_JOGGING:
+                    state_str = "JOGGING" if is_moving else "HOLDING"
+                
                 stdscr.erase()
-                stdscr.addstr(0, 0, "=== MotoMini Keyboard Jog ===  (ESC to quit)")
-                stdscr.addstr(1, 0,
-                    f"  Speed : {self.speed:.3f} rad/s  "
-                    f"( - = decr,  = = incr,  SPACE = stop, press key again = stop )  "
-                    f"State: {state_names[self.state]}")
-                stdscr.addstr(2, 0,
-                    "  Joint | Fwd | Rev | Actual pos | Cmd pos  | Act vel | Cmd vel | Name")
-                stdscr.addstr(3, 0,
-                    "  ------+-----+-----+------------+----------+---------+---------+------")
+                
+                # Header & Global State
+                stdscr.addstr(0, 0, "=== MotoMini Keyboard Jog ===")
+                stdscr.addstr(2, 0, f"System State : [ {state_str} ]")
+                stdscr.addstr(3, 0, f"Target Speed : {self.speed:.3f} rad/s")
+                
+                # Controls Guide
+                stdscr.addstr(5, 0, "Controls:")
+                stdscr.addstr(6, 0, "  [1-6] Fwd   |  [q-y] Rev   |  [SPACE] Stop All")
+                stdscr.addstr(7, 0, "  [ = ] Fast  |  [ - ] Slow  |  [ ESC ] Quit")
+                
+                # Data Table Header
+                stdscr.addstr(9,  0, "Joint | Keys |   Pos (Act / Cmd)   |   Vel (Act / Cmd)   | Status")
+                stdscr.addstr(10, 0, "------+------+---------------------+---------------------+---------")
+                
+                # Data Rows
                 for i in range(self.n_joints):
-                    arrow = ""
-                    if self.desired_velocity[i] > 0:   arrow = ">>> LATCHED"
-                    elif self.desired_velocity[i] < 0: arrow = "<<< LATCHED"
-                    
-                    # Added actual_vel[i] safely into the display string
-                    stdscr.addstr(4 + i, 0,
-                        f"  J{i+1}    |  {FORWARD_KEYS[i]}  |  {REVERSE_KEYS[i]}  "
-                        f"| {actual_pos[i]:+.4f} rad "
-                        f"| {self.command_positions[i]:+.4f} "
-                        f"| {actual_vel[i]:+.3f} "
-                        f"| {self.desired_velocity[i]:+.3f} "
-                        f"| {self.joint_names[i]} {arrow}")
+                    j_stat = "---"
+                    if self.desired_velocity[i] > 0:
+                        j_stat = ">>> FWD"
+                    elif self.desired_velocity[i] < 0:
+                        j_stat = "<<< REV"
+                        
+                    stdscr.addstr(11 + i, 0,
+                        f"  J{i+1}  | {FORWARD_KEYS[i]}/{REVERSE_KEYS[i]}  "
+                        f"|  {actual_pos[i]:+.4f} / {self.command_positions[i]:+.4f}  "
+                        f"|  {actual_vel[i]:+.3f} / {self.desired_velocity[i]:+.3f}  "
+                        f"| {j_stat}"
+                    )
                 stdscr.refresh()
             except curses.error:
                 pass
